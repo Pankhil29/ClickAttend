@@ -1,0 +1,6 @@
+streamlit
+pandas
+numpy
+opencv-python-headless
+xlsxwriter
+openpyxl
