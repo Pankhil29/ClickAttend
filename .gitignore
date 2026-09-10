@@ -1,0 +1,38 @@
+# Database (local SQLite data -- don't commit real student/attendance data)
+*.db
+*.sqlite
+*.sqlite3
+
+# Archived register photos (local, per-deployment data)
+register_photos/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Env vars
+.env
+
+# Exported reports (generated output, not source)
+*.xlsx
+!sample_data/*.xlsx
