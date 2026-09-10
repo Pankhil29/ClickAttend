@@ -95,6 +95,27 @@ division_options = get_division_options()
 # App title and icon
 st.set_page_config(page_title="College Attendance System", layout="wide")
 
+# Reposition Streamlit's toast notifications to the top-right corner (default is bottom-right).
+# Applied globally so every st.toast() call, on every page, shows up top-right.
+st.markdown("""
+    <style>
+    div[data-testid="stToast"] {
+        position: fixed !important;
+        top: 4rem !important;
+        bottom: auto !important;
+        right: 1rem !important;
+        left: auto !important;
+    }
+    div[data-testid="stToastContainer"] {
+        position: fixed !important;
+        top: 4rem !important;
+        bottom: auto !important;
+        right: 1rem !important;
+        left: auto !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # Build the sidebar navigation
 st.sidebar.title("Navigation")
 page = st.sidebar.radio("Go to", ["Dashboard", "Mark Attendance", "Photo Attendance", "Correct Attendance", "View Reports", "Photo Archive", "Admin Panel"])
@@ -211,6 +232,7 @@ elif page == "Mark Attendance":
                                  VALUES (?, ?, ?, ?, ?)''', attendance_data)
                 conn.commit()
                 st.success(f"Successfully saved {sub} attendance for {len(df_students)} students!")
+                st.toast(f"Attendance saved for {sub} ({len(df_students)} students)", icon="✅")
             except Exception as e:
                 st.error(f"Error saving attendance: {e}")
     else:
@@ -289,6 +311,7 @@ elif page == "Photo Attendance":
             st.stop()
 
         st.success(f"Grid detected: {result['num_students']} students x {result['num_sessions']} sessions")
+        st.toast(f"Grid detected: {result['num_students']} students x {result['num_sessions']} sessions", icon="🔍")
         st.image(cv2.cvtColor(result["debug_image"], cv2.COLOR_BGR2RGB),
                   caption="Green = Present, Red = Absent (verify the grid was captured correctly)")
 
@@ -397,6 +420,7 @@ elif page == "Photo Attendance":
                 conn.commit()
                 st.success(f"Saved! {len(session_cols)} sessions x {n_rows} students = {len(attendance_data)} entries added. "
                            f"The original photo has also been archived (for later verification).")
+                st.toast(f"Photo attendance saved ({n_rows} students, {len(session_cols)} sessions)", icon="✅")
             except Exception as e:
                 st.error(f"Error saving: {e}")
 
@@ -450,6 +474,7 @@ elif page == "Correct Attendance":
                             )
                         conn.commit()
                         st.success("Corrections saved!")
+                        st.toast("Attendance corrections saved", icon="✅")
                     except Exception as e:
                         st.error(f"Error updating: {e}")
 
@@ -512,6 +537,7 @@ elif page == "Photo Archive":
                             conn.commit()
                             st.session_state.pop(confirm_key, None)
                             st.success("Photo deleted.")
+                            st.toast("Photo deleted", icon="🗑️")
                             st.rerun()
                     with dcol2:
                         if st.button("Cancel", key=f"cancel_del_{rec['id']}"):
@@ -663,9 +689,9 @@ elif page == "Admin Panel":
 
                 if auto_distribute:
                     counts_str = ", ".join(f"{d}: {s}" for d, s in zip(division_names, sizes))
-                    st.success(f"Data imported! Students auto-distributed as -> {counts_str}")
+                    st.toast(f"{len(df_upload)} students imported -> {counts_str}", icon="✅")
                 else:
-                    st.success("Data imported successfully!")
+                    st.toast(f"{len(df_upload)} students imported successfully", icon="✅")
                 st.rerun()
             except Exception as e:
                 st.error(f"Error: {e}")
@@ -688,6 +714,7 @@ elif page == "Admin Panel":
                     c.execute("INSERT INTO divisions (name) VALUES (?)", (new_div.strip(),))
                     conn.commit()
                     st.success(f"Division '{new_div.strip()}' added!")
+                    st.toast(f"Division '{new_div.strip()}' added", icon="✅")
                     st.rerun()
                 except sqlite3.IntegrityError:
                     st.warning("This division is already in the list!")
@@ -707,6 +734,7 @@ elif page == "Admin Panel":
                     c.execute("DELETE FROM divisions WHERE name=?", (remove_div,))
                     conn.commit()
                     st.success(f"Division '{remove_div}' removed.")
+                    st.toast(f"Division '{remove_div}' removed", icon="🗑️")
                     st.rerun()
     st.subheader("Subject Management")
 
@@ -733,6 +761,7 @@ elif page == "Admin Panel":
                     
                     conn.commit()
                     st.success(f"Subject '{new_sub.upper()}' successfully added!")
+                    st.toast(f"Subject '{new_sub.upper()}' added", icon="✅")
                     st.rerun() 
                 except sqlite3.IntegrityError:
                     st.warning("This subject is already in the list!")
@@ -744,6 +773,7 @@ elif page == "Admin Panel":
     st.subheader("Danger Zone")
     if st.session_state.pop("system_data_deleted", False):
         st.success("All students, subjects, divisions, attendance, and archived photos have been deleted. You can now start fresh.")
+        st.toast("All system data deleted", icon="🗑️")
 
     st.error("DANGER: This option will permanently delete ALL students, subjects, divisions, attendance, AND archived photos.")
     if "confirm_delete_all_data" not in st.session_state:
@@ -804,6 +834,7 @@ elif page == "Admin Panel":
 
             if remaining_records == 0:
                 st.success("All attendance data has been cleared successfully.")
+                st.toast("All attendance data cleared", icon="🗑️")
                 st.rerun()
             else:
                 st.error("Attendance data was not cleared. Please try again.")
